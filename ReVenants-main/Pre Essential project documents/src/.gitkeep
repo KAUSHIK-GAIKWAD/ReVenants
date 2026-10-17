@@ -1,0 +1,7 @@
+# Python application source files
+# Main entry points planned:
+# - bot.py (Telegram listener & sender)
+# - classifier.py (Claude JSON parser)
+# - database.py (SQLite models & queries)
+# - dashboard.py (Web interface)
+# - scheduler.py (APScheduler background cron)

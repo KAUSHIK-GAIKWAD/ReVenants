@@ -1,0 +1,235 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-status-pending: var(--status-pending);
+  --color-status-progress: var(--status-progress);
+  --color-status-blocked: var(--status-blocked);
+  --color-status-complete: var(--status-complete);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --background: oklch(0.98 0.008 255);
+  --foreground: oklch(0.22 0.025 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.025 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.025 255);
+  --primary: oklch(0.52 0.19 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.015 255);
+  --secondary-foreground: oklch(0.26 0.04 255);
+  --muted: oklch(0.95 0.012 255);
+  --muted-foreground: oklch(0.48 0.035 255);
+  --accent: oklch(0.93 0.025 255);
+  --accent-foreground: oklch(0.24 0.04 255);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.86 0.02 255);
+  --input: oklch(0.82 0.025 255);
+  --ring: oklch(0.52 0.19 255);
+  --status-pending: oklch(0.6 0.02 255);
+  --status-progress: oklch(0.68 0.16 235);
+  --status-blocked: oklch(0.62 0.22 25);
+  --status-complete: oklch(0.68 0.18 155);
+  --chart-1: oklch(0.65 0.2 250);
+  --chart-2: oklch(0.68 0.18 155);
+  --chart-3: oklch(0.72 0.16 75);
+  --chart-4: oklch(0.65 0.22 310);
+  --chart-5: oklch(0.62 0.22 25);
+  --sidebar: oklch(0.98 0.008 255);
+  --sidebar-foreground: oklch(0.22 0.025 255);
+  --sidebar-primary: oklch(0.52 0.19 255);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.93 0.025 255);
+  --sidebar-accent-foreground: oklch(0.24 0.04 255);
+  --sidebar-border: oklch(0.86 0.02 255);
+  --sidebar-ring: oklch(0.52 0.19 255);
+}
+
+.dark {
+  --background: oklch(0.115 0.025 255);
+  --foreground: oklch(0.98 0.005 255);
+  --card: oklch(0.16 0.025 255);
+  --card-foreground: oklch(0.98 0.005 255);
+  --popover: oklch(0.16 0.025 255);
+  --popover-foreground: oklch(0.98 0.005 255);
+  --primary: oklch(0.65 0.2 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.22 0.03 255);
+  --secondary-foreground: oklch(0.98 0.005 255);
+  --muted: oklch(0.2 0.02 255);
+  --muted-foreground: oklch(0.68 0.03 255);
+  --accent: oklch(0.24 0.035 255);
+  --accent-foreground: oklch(0.98 0.005 255);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 255);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.65 0.2 250);
+  --chart-1: oklch(0.65 0.2 250);
+  --chart-2: oklch(0.68 0.18 155);
+  --chart-3: oklch(0.72 0.16 75);
+  --chart-4: oklch(0.65 0.22 310);
+  --chart-5: oklch(0.62 0.22 25);
+  --sidebar: oklch(0.14 0.025 255);
+  --sidebar-foreground: oklch(0.98 0.005 255);
+  --sidebar-primary: oklch(0.65 0.2 250);
+  --sidebar-primary-foreground: oklch(0.98 0.005 255);
+  --sidebar-accent: oklch(0.22 0.03 255);
+  --sidebar-accent-foreground: oklch(0.98 0.005 255);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.65 0.2 250);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+  }
+}
+
+/* Motion for newly added feature surfaces only. The ready class prevents
+   unsupported browsers or pre-hydration content from becoming inaccessible. */
+.feature-motion [data-feature-reveal] {
+  --feature-reveal-delay: 0ms;
+}
+
+.feature-motion.feature-motion-ready [data-feature-reveal] {
+  opacity: 0;
+  transform: translateY(24px) scale(0.985);
+  transition:
+    opacity 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--feature-reveal-delay),
+    transform 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--feature-reveal-delay);
+  will-change: opacity, transform;
+}
+
+.feature-motion.feature-motion-ready [data-feature-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.feature-motion [data-feature-reveal]:nth-child(2) { --feature-reveal-delay: 70ms; }
+.feature-motion [data-feature-reveal]:nth-child(3) { --feature-reveal-delay: 140ms; }
+
+.feature-motion .feature-motion-button {
+  transition:
+    transform 210ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 210ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.feature-motion .feature-motion-button:not(:disabled):hover {
+  transform: scale(1.04);
+}
+
+.feature-motion .feature-motion-button:not(:disabled):active {
+  transform: scale(0.97);
+  transition-duration: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-motion.feature-motion-ready [data-feature-reveal],
+  .feature-motion .feature-motion-button {
+    transition: none;
+    transform: none;
+  }
+
+  .feature-motion.feature-motion-ready [data-feature-reveal] {
+    opacity: 1;
+  }
+}
+
+/* Professional light dashboard treatment for the existing utility-based UI. */
+.light-dashboard,
+.light-dashboard[class*="bg-slate-950"] {
+  background: #f5f7fb !important;
+  color: #172033 !important;
+}
+
+.light-dashboard [class*="bg-slate-950"] { background-color: #ffffff !important; }
+.light-dashboard [class*="bg-slate-900"] { background-color: #ffffff !important; }
+.light-dashboard [class*="bg-slate-800"] { background-color: #eef2f7 !important; }
+.light-dashboard [class*="bg-slate-700"] { background-color: #e2e8f0 !important; }
+.light-dashboard [class*="border-slate-800"],
+.light-dashboard [class*="border-slate-700"] { border-color: #d9e1ec !important; }
+.light-dashboard [class*="text-white"],
+.light-dashboard [class*="text-slate-100"],
+.light-dashboard [class*="text-slate-200"] { color: #172033 !important; }
+.light-dashboard [class*="text-slate-300"] { color: #334155 !important; }
+.light-dashboard [class*="text-slate-400"] { color: #64748b !important; }
+.light-dashboard [class*="text-slate-500"],
+.light-dashboard [class*="text-slate-600"] { color: #8492a6 !important; }
+.light-dashboard [class*="shadow-slate-950"] { --tw-shadow-color: rgb(100 116 139 / 0.14) !important; }
+.light-dashboard input,
+.light-dashboard textarea,
+.light-dashboard select { color: #172033; }

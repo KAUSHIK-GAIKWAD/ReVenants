@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Group Project Coordinator - Real-time task board, blocker detection, and Telegram follow-up hub for student teams.">
+  <title>AI Group Project Coordinator | Team Hub</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-logo">
+          <span class="logo-emoji">🤖</span>
+          <span class="pulse-ring"></span>
+        </div>
+        <div class="brand-info">
+          <h1>AI Project Coordinator</h1>
+          <span class="brand-tag">Autonomous Team Task &amp; Blocker Tracking</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Live Polling & Connection Indicator -->
+        <div class="status-pill status-connected" id="connectionStatusPill">
+          <span class="live-dot"></span>
+          <span id="connectionStatusText">Live Sync (Polling 4s)</span>
+        </div>
+        <div class="refresh-time" id="lastRefreshedLabel">
+          Last updated: <span id="lastRefreshedTime">Just now</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnRefreshNow" class="btn btn-secondary btn-sm" title="Refresh task data immediately">
+          <span class="btn-icon">🔄</span> Refresh
+        </button>
+        <button id="btnOpenNewTaskModal" class="btn btn-primary btn-sm">
+          <span class="btn-icon">+</span> New Task
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="dashboard-container">
+    <!-- API Error Banner (hidden by default) -->
+    <div id="apiErrorBanner" class="api-error-banner" style="display: none;">
+      <div class="banner-content">
+        <span class="banner-icon">⚠️</span>
+        <div>
+          <strong id="apiErrorMessage">Backend API Connection Lost.</strong>
+          <p>Unable to fetch tasks from the server. Retrying automatically...</p>
+        </div>
+      </div>
+      <button id="btnRetryApi" class="btn btn-sm btn-outline">Retry Now</button>
+    </div>
+
+    <!-- Summary Metrics Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card card-total">
+        <div class="metric-top">
+          <span class="metric-label">Total Tasks</span>
+          <span class="metric-icon">📋</span>
+        </div>
+        <div class="metric-number" id="metricTotal">0</div>
+        <div class="metric-sub">Active project backlog</div>
+      </div>
+
+      <div class="metric-card card-in-progress">
+        <div class="metric-top">
+          <span class="metric-label">In Progress</span>
+          <span class="metric-icon">🚀</span>
+        </div>
+        <div class="metric-number" id="metricInProgress">0</div>
+        <div class="metric-sub">Actively underway</div>
+      </div>
+
+      <div class="metric-card card-pending">
+        <div class="metric-top">
+          <span class="metric-label">Pending</span>
+          <span class="metric-icon">⏳</span>
+        </div>
+        <div class="metric-number" id="metricPending">0</div>
+        <div class="metric-sub">Queued to start</div>
+      </div>
+
+      <div class="metric-card card-blocked">
+        <div class="metric-top">
+          <span class="metric-label">Blocked</span>
+          <span class="metric-icon">🛑</span>
+        </div>
+        <div class="metric-number" id="metricBlocked">0</div>
+        <div class="metric-sub">Needs teammate help</div>
+      </div>
+
+      <div class="metric-card card-completed">
+        <div class="metric-top">
+          <span class="metric-label">Completed</span>
+          <span class="metric-icon">✅</span>
+        </div>
+        <div class="metric-number" id="metricCompleted">0</div>
+        <div class="metric-sub">Finished &amp; verified</div>
+      </div>
+
+      <div class="metric-card card-rate">
+        <div class="metric-top">
+          <span class="metric-label">Completion Rate</span>
+          <span class="metric-icon">📈</span>
+        </div>
+        <div class="metric-number" id="metricRate">0%</div>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-fill" id="metricProgressBar" style="width: 0%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two-Column Workspace: Left Task Table, Right Simulator Panel -->
+    <div class="workspace-grid">
+      <!-- Left Column: Tasks Board -->
+      <section class="tasks-section">
+        <!-- Controls & Filters Bar -->
+        <div class="filter-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="taskSearchInput" placeholder="Search tasks, assignees, or blockers..." autocomplete="off">
+            <button id="btnClearSearch" class="btn-clear" style="display: none;">&times;</button>
+          </div>
+
+          <div class="filter-pills" id="statusFilterPills">
+            <button class="pill active" data-status="ALL">All (<span id="countAll">0</span>)</button>
+            <button class="pill" data-status="IN_PROGRESS">In Progress (<span id="countInProgress">0</span>)</button>
+            <button class="pill" data-status="BLOCKED">Blocked (<span id="countBlocked">0</span>)</button>
+            <button class="pill" data-status="PENDING">Pending (<span id="countPending">0</span>)</button>
+            <button class="pill" data-status="COMPLETED">Completed (<span id="countCompleted">0</span>)</button>
+          </div>
+        </div>
+
+        <!-- Task Grid / Cards -->
+        <div class="tasks-list" id="tasksList">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="tasksLoadingState" class="state-placeholder" style="display: none;">
+          <div class="spinner"></div>
+          <p>Loading project tasks from server...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="tasksEmptyState" class="state-placeholder" style="display: none;">
+          <div class="empty-icon">📂</div>
+          <h3>No tasks match your filters</h3>
+          <p>Try resetting your search query or filter criteria.</p>
+          <button id="btnResetFilters" class="btn btn-secondary btn-sm">Reset Filters</button>
+        </div>
+      </section>
+
+      <!-- Right Column: Interactive Reply Simulator -->
+      <aside class="sidebar-section">
+        <div class="simulator-card">
+          <div class="simulator-header">
+            <div class="sim-title-group">
+              <span class="sim-icon">💬</span>
+              <h2>Telegram Reply Simulator</h2>
+            </div>
+            <span class="badge-tag badge-sim">Live Engine</span>
+          </div>
+
+          <p class="sim-description">
+            Test how natural language replies update task health. Blocker phrases strictly override completion words (The Kabir Rule).
+          </p>
+
+          <form id="simForm" class="sim-form">
+            <div class="form-group">
+              <label for="simTaskSelect">Select Target Task:</label>
+              <select id="simTaskSelect" class="form-control" required>
+                <!-- Dynamically populated with tasks -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Quick Test Presets:</label>
+              <div class="preset-chips">
+                <button type="button" class="preset-chip chip-blocker" data-text="The payment API is connected, but I am waiting for test credentials.">
+                  "Connected, but waiting for test credentials" (Kabir Rule)
+                </button>
+                <button type="button" class="preset-chip chip-done" data-text="Finished! All tests passed and code merged.">
+                  "Finished! All tests passed and code merged."
+                </button>
+                <button type="button" class="preset-chip chip-progress" data-text="Almost done, wrapping up styling.">
+                  "Almost done" (Ambiguous safeguard)
+                </button>
+                <button type="button" class="preset-chip chip-progress" data-text="Working on it right now.">
+                  "Working on it right now."
+                </button>
+                <button type="button" class="preset-chip chip-blocker" data-text="I can't continue until the database schema is shared.">
+                  "Can't continue until schema is shared"
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="simMessageInput">Incoming Reply Text:</label>
+              <textarea id="simMessageInput" class="form-control" rows="2" placeholder="Type a message or click a preset chip above..." required></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmitSim" class="btn btn-primary btn-block">
+              <span class="btn-icon">⚡</span> Process Teammate Reply
+            </button>
+          </form>
+
+          <!-- Live Result Callout -->
+          <div id="simResultCallout" class="sim-result-box" style="display: none;">
+            <div class="sim-result-top">
+              <span class="sim-result-badge" id="simResultIntent">BLOCKED</span>
+              <span class="sim-result-confidence" id="simResultConfidence">95% Confidence</span>
+            </div>
+            <div class="sim-result-detail">
+              <div class="detail-line" id="simBlockerRow" style="display: none;">
+                <strong>Extracted Blocker:</strong>
+                <span id="simResultBlocker" class="text-danger">-</span>
+              </div>
+              <div class="detail-line">
+                <strong>Backend Transition:</strong>
+                <span id="simResultStatus">PENDING &rarr; BLOCKED</span>
+              </div>
+              <div class="detail-line">
+                <strong>Reasoning:</strong>
+                <p id="simResultEvidence" class="text-dim"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Registered Team Members Quick Reference -->
+        <div class="teammates-card">
+          <div class="card-header-sm">
+            <h3>Registered Teammates</h3>
+            <span class="text-dim text-xs">Telegram Bot Link</span>
+          </div>
+          <div class="teammates-list" id="teammatesQuickList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 1: TASK DETAILS & IMMUTABLE STATUS HISTORY -->
+  <!-- ================================================================= -->
+  <div class="modal-backdrop" id="taskDetailModal" style="display: none;">
+    <div class="modal-window modal-wide">
+      <div class="modal-header">
+        <div>
+          <span class="modal-badge-id" id="modalTaskId">TASK-103</span>
+          <h2 id="modalTaskTitle">Task Details</h2>
+        </div>
+        <button class="modal-close" id="btnCloseDetailModal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Task Properties Grid -->
+        <div class="modal-props-grid">
+          <div class="prop-item">
+            <span class="prop-label">Status</span>
+            <span class="prop-value" id="modalTaskStatus">PENDING</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">Assignee</span>
+            <span class="prop-value" id="modalTaskOwner">-</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">Priority</span>
+            <span class="prop-value" id="modalTaskPriority">Medium</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">Due Date</span>
+            <span class="prop-value" id="modalTaskDueDate">-</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">Progress</span>
+            <span class="prop-value" id="modalTaskProgress">0%</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">Dependencies</span>
+            <span class="prop-value" id="modalTaskDepends">-</span>
+          </div>
+        </div>
+
+        <!-- Blocker Callout if Blocked -->
+        <div id="modalBlockerBox" class="modal-blocker-callout" style="display: none;">
+          <span class="blocker-warning-icon">🛑</span>
+          <div>
+            <strong>Active Blocker Reason:</strong>
+            <p id="modalBlockerText">-</p>
+          </div>
+        </div>
+
+        <div class="modal-desc-box">
+          <h4>Description</h4>
+          <p id="modalTaskDesc">No description provided.</p>
+        </div>
+
+        <!-- Immutable Status History Stream -->
+        <div class="modal-history-section">
+          <div class="history-header">
+            <h4>📜 Immutable Status History Audit Trail</h4>
+            <span class="history-count" id="modalHistoryCount">0 entries</span>
+          </div>
+
+          <div class="history-timeline" id="modalHistoryTimeline">
+            <!-- Dynamically populated with status history -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCloseDetailModalBtn">Close</button>
+        <button type="button" class="btn btn-primary" id="btnFollowupFromModal">
+          <span class="btn-icon">✈️</span> Send Telegram Follow-up
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 2: CREATE NEW TASK -->
+  <!-- ================================================================= -->
+  <div class="modal-backdrop" id="createTaskModal" style="display: none;">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>Create Project Task</h2>
+        <button class="modal-close" id="btnCloseCreateModal">&times;</button>
+      </div>
+
+      <form id="createTaskForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="createTaskTitle">Task Title <span class="required">*</span></label>
+            <input type="text" id="createTaskTitle" class="form-control" placeholder="e.g. Implement webhook signature verification" required>
+          </div>
+
+          <div class="form-group">
+            <label for="createTaskDesc">Description</label>
+            <textarea id="createTaskDesc" class="form-control" rows="2" placeholder="Deliverables, requirements, technical details..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="createTaskOwner">Assignee</label>
+              <select id="createTaskOwner" class="form-control">
+                <option value="Kabir Patel">Kabir Patel (@kabir_p)</option>
+                <option value="Maya Chen">Maya Chen (@maya_c)</option>
+                <option value="Alex Morgan">Alex Morgan (@alex_m)</option>
+                <option value="Sara Al-Mansoor">Sara Al-Mansoor (@sara_m)</option>
+              </select>
+            </div>
+
+            <div class="form-group col-half">
+              <label for="createTaskPriority">Priority</label>
+              <select id="createTaskPriority" class="form-control">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="createTaskStatus">Status</label>
+              <select id="createTaskStatus" class="form-control">
+                <option value="PENDING" selected>PENDING</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="BLOCKED">BLOCKED</option>
+                <option value="COMPLETED">COMPLETED</option>
+              </select>
+            </div>
+
+            <div class="form-group col-half">
+              <label for="createTaskDueDate">Due Date</label>
+              <input type="date" id="createTaskDueDate" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group" id="createBlockerGroup" style="display: none;">
+            <label for="createTaskBlocker">Blocker Reason <span class="required">*</span></label>
+            <input type="text" id="createTaskBlocker" class="form-control" placeholder="Describe what is blocking this task...">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelCreateModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveNewTask">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Test suite files
+# Planned test modules:
+# - test_classifier.py (eval against TEST_CASES.md)
+# - test_database.py (schema & status_history audit integrity)
+# - test_bot_mock.py (Telegram webhook and loop mocking)

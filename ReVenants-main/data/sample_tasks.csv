@@ -1,0 +1,9 @@
+task_id,title,description,owner_name,telegram_handle,status,due_date,priority,depends_on_task_id,blocker
+TASK-101,Setup database schema,Initialize SQLite database tables and migrations,Alex Morgan,@alex_m,Complete,2025-11-10,High,,
+TASK-102,Build User Authentication API,Implement JWT login and registration endpoints,Maya Chen,@maya_c,In Progress,2025-11-12,High,TASK-101,
+TASK-103,Connect the payment API,Integrate Stripe sandbox API and webhook handler,Kabir Patel,@kabir_p,Pending,2025-11-13,Urgent,TASK-102,
+TASK-104,Design Checkout UI,Build frontend checkout form in React,Sara Al-Mansoor,@sara_m,In Progress,2025-11-13,Medium,,
+TASK-105,Integrate Payment Gateway with UI,Connect frontend checkout form with payment API,Sara Al-Mansoor,@sara_m,Pending,2025-11-14,High,"TASK-103,TASK-104",
+TASK-106,Write Payment Integration Tests,End-to-end tests for successful and failed payments,Kabir Patel,@kabir_p,Pending,2025-11-15,Medium,TASK-105,
+TASK-107,Prepare Slide Deck for Demo Day,Draft project overview architecture slides,Alex Morgan,@alex_m,In Progress,2025-11-16,Low,,
+TASK-108,Deploy Staging Environment,Configure cloud hosting container and DNS,Maya Chen,@maya_c,Pending,2025-11-16,High,TASK-102,
