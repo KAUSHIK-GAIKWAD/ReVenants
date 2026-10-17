@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:prod": "cross-env NITRO_PRESET=node-server vite build",
+    "postbuild": "node scripts/copy-built-css.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -14,9 +16,10 @@
     "test:watch": "vitest",
     "seed": "tsx scripts/seed.ts",
     "simulate": "tsx scripts/simulate_reply.ts",
-    "bot:poll": "tsx scripts/telegram_poller.ts",
+    "bot:poll": "tsx watch scripts/telegram_poller.ts",
+    "bot:poll:prod": "tsx scripts/telegram_poller.ts",
     "dev:all": "tsx scripts/dev_all.ts",
-    "start": "tsx scripts/dev_all.ts"
+    "start": "tsx scripts/start_prod.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -74,7 +77,9 @@
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "cross-env": "^10.1.0",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -85,6 +90,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "cross-env": "^10.1.0",
     "drizzle-kit": "0.x",
     "drizzle-orm": "0.x",
     "eslint": "^9.32.0",
