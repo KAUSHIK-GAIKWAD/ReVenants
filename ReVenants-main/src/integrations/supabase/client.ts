@@ -7,6 +7,34 @@ function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
 
+/** A service-role JWT must never be included in a browser bundle. */
+function isServiceRoleJwt(value: string | undefined): boolean {
+  if (!value?.startsWith('eyJ')) return false;
+  try {
+    const payload = value.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
+    if (!payload) return false;
+    const padded = payload.padEnd(Math.ceil(payload.length / 4) * 4, '=');
+    return JSON.parse(atob(padded)).role === 'service_role';
+  } catch {
+    return false;
+  }
+}
+
+function isValidAnonKey(value: string | undefined): boolean {
+  if (!value) return false;
+  if (value.startsWith('REPLACE_WITH') || value.includes('placeholder')) return false;
+  if (isServiceRoleJwt(value)) return false;
+  return value.startsWith('eyJ') || value.startsWith('sb_publishable_');
+}
+
+const browserKey = import.meta.env['PUBLIC_SUPABASE_PUBLISHABLE_KEY'];
+
+/**
+ * The dashboard reads its data through server functions, so browser auth is
+ * optional. Keep it disabled until a real Supabase anon/publishable key is set.
+ */
+export const browserAuthAvailable = Boolean(browserKey && isValidAnonKey(browserKey));
+
 // The public URL can be reachable only from the browser, so server requests go to the runtime URL of the same backend.
 function serverSupabaseUrl(publicUrl: string, supabaseKey: string): string | undefined {
   if (typeof window !== 'undefined' || typeof process === 'undefined') return undefined;
@@ -49,8 +77,14 @@ function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof f
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
+  // This module is shared with browser-facing components. It must never fall
+  // back to a server environment variable, which may contain a service key.
+  const SUPABASE_URL = import.meta.env['PUBLIC_SUPABASE_URL'];
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['PUBLIC_SUPABASE_PUBLISHABLE_KEY'];
+
+  if (isServiceRoleJwt(SUPABASE_PUBLISHABLE_KEY)) {
+    throw new Error('A Supabase service-role key was supplied to the browser client. Configure a publishable/anon key instead.');
+  }
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
