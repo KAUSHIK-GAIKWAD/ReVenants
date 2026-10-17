@@ -3,20 +3,33 @@ services:
     name: revenants-command-center
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run build:prod
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
-        value: 20
+        value: "20"
+      # Tells vite.config.ts to use the node-server Nitro preset (already set by build:prod, kept for safety)
+      - key: NITRO_PRESET
+        value: node-server
+      # Render sets this automatically — vite.config.ts uses it to switch preset
+      - key: RENDER
+        value: "true"
+
+      # ── Telegram Bot ────────────────────────────────────────────────────
       - key: TELEGRAM_BOT_TOKEN
-        sync: false
+        sync: false     # Set in Render dashboard: 8935647385:AAEKLbYR8ytqeZVEkK0yZ__1dxYy6S0F6to
       - key: TELEGRAM_BOT_USERNAME
-        value: ReVenants_Managers_bot
+        value: revenants_coord_bot
+
+      # ── Supabase (server-side, never exposed to browser) ─────────────────
       - key: SUPABASE_URL
-        sync: false
+        sync: false     # Set in Render dashboard: https://jryhkraavtorrfjvdunv.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: VITE_SUPABASE_URL
-        sync: false
-      - key: VITE_SUPABASE_PUBLISHABLE_KEY
-        sync: false
+        sync: false     # Set in Render dashboard: your service_role JWT
+
+      # ── Supabase (browser-side / public — ANON key only, NOT service role) ─
+      # This becomes import.meta.env.PUBLIC_SUPABASE_URL in the client bundle
+      - key: PUBLIC_SUPABASE_URL
+        sync: false     # Same value as SUPABASE_URL
+      - key: PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false     # Set in Render dashboard: your ANON key (starts with eyJ...)
